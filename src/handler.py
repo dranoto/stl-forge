@@ -256,18 +256,27 @@ def upload_to_r2(stl_bytes: bytes, job_id: str) -> str | None:
 
 # ---- Handler -----------------------------------------------------------------
 
-def handler(event):
-    """RunPod serverless handler. Returns dict with stl_b64 or stl_url + report,
-    or an error. RunPod wraps this in `{"output": ...}` automatically — don't
-    add a top-level `output` key here (it would double-wrap).
+# Default behaviour: every STL goes to the S3-compatible bucket and the
+# response returns a presigned URL. The client downloads the bytes from that
+# URL. This keeps the handler simple (one code path) and uniform (no surprise
+# 502s when an edge-timeout drops a >20MB /runsync response).
+#
+# Pass input.force_inline=True to opt back into the b64-in-the-response path
+# for a single request. Only safe when the resulting STL is <7MB base64
+# (≤100k faces); the client will still work for larger files but RunPod's
+# 20MB /runsync cap will reject the response at job-done time.
+FORCE_INLINE_KEY = "force_inline"
 
-    Output shape (after RunPod's auto-wrap):
-        For <=~5 MB STLs (fits in 20 MB /runsync cap):
-            {"stl_b64": <base64>, "report": {...}}
-        For >~5 MB STLs (would exceed /runsync cap):
-            {"stl_url": <R2 presigned URL>, "stl_bytes": <int>, "report": {...}}
-            or, if R2 upload fails, {"stl_b64": <base64>, "report": {...}}
-            (the latter will 400 at the job-done callback — logged as a warning)
+
+def handler(event):
+    """RunPod serverless handler. Returns a dict with stl_url (and stl_bytes
+    + report) for every output, or an error. RunPod wraps this in
+    `{"output": ...}` automatically.
+
+    By default the handler uploads the STL to the S3-compatible bucket
+    configured via BUCKET_* env vars and returns a 24h presigned URL. Pass
+    `force_inline=True` in the input to get the base64-in-response path
+    instead (only safe for ~100k faces or fewer).
     """
     from runpod.serverless.utils.rp_cleanup import clean
 
@@ -281,9 +290,11 @@ def handler(event):
         target_faces = max(10_000, min(500_000, target_faces))
         mc_resolution = int(inp.get("mc_resolution", DEFAULT_MC_RESOLUTION))
         mc_resolution = max(64, min(512, mc_resolution))
+        force_inline = bool(inp.get(FORCE_INLINE_KEY, False))
 
         print(
-            f"[stl-forge] request: target_faces={target_faces} mc_resolution={mc_resolution}",
+            f"[stl-forge] request: target_faces={target_faces} mc_resolution={mc_resolution} "
+            f"force_inline={force_inline}",
             flush=True,
         )
 
@@ -303,7 +314,6 @@ def handler(event):
         # 4. generate
         t0 = time.time()
         kwargs = {"num_inference_steps": 30}
-        # Some Hunyuan3D variants accept octree_resolution
         if hasattr(pipe, "octree_resolution"):
             kwargs["octree_resolution"] = mc_resolution
         mesh_result = pipe(image=tmp_path, **kwargs)[0]
@@ -328,7 +338,7 @@ def handler(event):
         cleaned.export(buf, file_type="stl")
         stl_bytes = buf.getvalue()
 
-        # 7. build the report
+        # 7. report (always included)
         report = {
             "vertices": int(len(cleaned.vertices)),
             "faces": int(len(cleaned.faces)),
@@ -340,29 +350,38 @@ def handler(event):
             "model": HF_MODEL,
         }
 
-        # 8. choose return path: inline (small) or R2 upload (large)
+        # 8. choose return path: always S3, unless force_inline=True
         stl_b64 = base64.b64encode(stl_bytes).decode("ascii")
-        if len(stl_b64) > STL_B64_INLINE_MAX_BYTES:
-            # Too big for /runsync. Try R2 upload.
-            job_id = event.get("id", f"unknown-{int(time.time())}")
-            stl_url = upload_to_r2(stl_bytes, job_id)
-            if stl_url is not None:
-                # R2 path: return URL, no stl_b64
-                return {
-                    "stl_url": stl_url,
-                    "stl_bytes": int(len(stl_bytes)),
-                    "report": report,
-                }
-            # R2 failed: log and fall back to stl_b64. The response will likely 400.
+        if force_inline or len(stl_b64) <= STL_B64_INLINE_MAX_BYTES:
+            # Inline path (small files, or caller explicitly opted in).
+            return {
+                "stl_b64": stl_b64,
+                "stl_bytes": int(len(stl_bytes)),
+                "report": report,
+            }
+
+        # Default: upload to S3-compatible storage and return a presigned URL.
+        job_id = event.get("id", f"unknown-{int(time.time())}")
+        stl_url = upload_to_r2(stl_bytes, job_id)
+        if stl_url is None:
+            # R2 not configured or upload failed — fall back to inline. If the
+            # resulting base64 is too big for /runsync the job-done callback
+            # will 502, but that's better than failing the whole request.
             print(
                 f"[stl-forge] WARNING: STL is {len(stl_b64)/1024/1024:.1f} MB base64 "
                 f"(> {STL_B64_INLINE_MAX_BYTES/1024/1024:.1f} MB inline limit) and R2 upload "
                 f"failed. Returning stl_b64 anyway — expect a job-done 400.",
                 flush=True,
             )
+            return {
+                "stl_b64": stl_b64,
+                "stl_bytes": int(len(stl_bytes)),
+                "report": report,
+            }
 
         return {
-            "stl_b64": stl_b64,
+            "stl_url": stl_url,
+            "stl_bytes": int(len(stl_bytes)),
             "report": report,
         }
     except Exception as e:

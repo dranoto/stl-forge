@@ -1,0 +1,41 @@
+# STL Forge — pinned runtime deps
+# Built on top of Hunyuan3D 2.1's own requirements.txt; we add what's
+# missing for serverless + printability pipeline.
+
+# RunPod serverless SDK
+runpod>=1.7.0
+
+# Mesh cleanup + repair
+trimesh>=4.5.0
+pymeshfix>=0.16.0
+# rtree is a trimesh optional backend used for some operations
+rtree>=1.3.0
+# networkx needed by trimesh.repair
+networkx>=3.3
+# trimesh 4.x: simplify_quadric_decimation is just a thin wrapper around
+# this package. Without it, decimation silently fails and we ship the
+# undecimated mesh (~2M faces), which makes the STL too large for RunPod's
+# response callback. fast-simplification has prebuilt cp310 wheels, fast install.
+fast-simplification>=0.1.7
+
+# Image I/O
+Pillow>=10.0.0
+
+# HF runtime (the model card's recommended API path)
+huggingface_hub>=0.27.0
+
+# HTTP for image URLs
+requests>=2.31.0
+
+# Already brought in by PyTorch, but explicit so trimesh has it
+numpy>=1.26.0
+scipy>=1.13.0
+
+# Local server testing
+fastapi>=0.115.0
+uvicorn>=0.32.0
+
+# S3-compatible upload (for STLs that exceed the 20 MB /runsync cap).
+# The runpod SDK's rp_upload module lazy-imports boto3, so it's a soft
+# dependency, but we use boto3 directly in the handler for reliability.
+boto3>=1.34.0

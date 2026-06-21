@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Test outputs
+tests/output/
+tests/fixtures/*.png
+tests/fixtures/*.jpg
+tests/fixtures/*.glb
+tests/fixtures/*.obj
+!tests/fixtures/.gitkeep
+
+# Build artifacts
+build/
+dist/
+*.egg
+
+# Logs
+*.log
+logs/
+
+# Env / secrets — never commit
+.env
+.env.*
+# ... except the example template (no real secrets)
+!.env.example

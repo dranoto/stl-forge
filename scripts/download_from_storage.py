@@ -38,7 +38,7 @@ except ImportError as e:
 
 # --- Config from env (BUCKET_* must be set, same vars the handler reads) ---
 def _load_env_from_dotenv():
-    env_path = os.environ.get("DOTENV_PATH", "<workspace-path>/.env")
+    env_path = os.environ.get("DOTENV_PATH", str(Path(__file__).resolve().parent.parent / ".env"))
     p = Path(env_path)
     if not p.exists():
         return

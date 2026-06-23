@@ -41,3 +41,7 @@ logs/
 .env.*
 # ... except the example template (no real secrets)
 !.env.example
+
+# Personal lab notebook — keep local, never commit
+SKILL.md
+references/

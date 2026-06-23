@@ -54,7 +54,7 @@ LOW_VRAM = os.environ.get("LOW_VRAM", "0") == "1"
 BUCKET_ENDPOINT_URL = os.environ.get("BUCKET_ENDPOINT_URL", "").strip()
 BUCKET_ACCESS_KEY_ID = os.environ.get("BUCKET_ACCESS_KEY_ID", "").strip()
 BUCKET_SECRET_ACCESS_KEY = os.environ.get("BUCKET_SECRET_ACCESS_KEY", "").strip()
-BUCKET_NAME = os.environ.get("BUCKET_NAME", "<bucket-name>").strip()
+BUCKET_NAME = os.environ.get("BUCKET_NAME", "").strip()
 R2_CONFIGURED = bool(BUCKET_ENDPOINT_URL and BUCKET_ACCESS_KEY_ID and BUCKET_SECRET_ACCESS_KEY)
 
 # Threshold (in bytes of base64) above which we upload instead of inlining.

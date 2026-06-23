@@ -3,7 +3,7 @@
   "description": "Convert a single image into a 3D-printable STL file via Hunyuan3D 2.1 (shape-only) and a trimesh cleanup pipeline (manifold check, hole fill, decimation, recentre). Returns a watertight binary STL plus a printability report. Billed per request on RunPod Serverless.",
   "type": "serverless",
   "category": "image",
-  "iconUrl": "https://raw.githubusercontent.com/dranoto/stl-forge/main/assets/sample-output.png",
+  "iconUrl": "https://raw.githubusercontent.com/dranoto/stl-forge/main/assets/icon.png",
   "config": {
     "runsOn": "GPU",
     "containerDiskInGb": 30,

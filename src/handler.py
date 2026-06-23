@@ -3,24 +3,26 @@ STL Forge — RunPod serverless handler.
 
 Input event:
   input.image: str         — base64, data URL (data:image/...;base64,...), or http(s) URL. Required.
-  input.target_faces: int  — decimation target. Default 100000. Range 10k-500k.
+  input.target_faces: int  — decimation target. Default 100000. Range 10k-1M.
   input.mc_resolution: int — Marching Cubes voxel grid. Default 256. Lower for less VRAM.
   input.quant: str         — "fp16" (default), "fp8", or "int8" — when set, quantize the DiT.
+  input.force_inline: bool — opt in to the inline `stl_b64` response path (only safe for ≤100k faces,
+                             larger values will 502 the job-done callback at the 20MB /runsync cap).
 
 Output (wrapped by RunPod under "output" — see rp_format_response):
-  For files that fit in the 20 MB /runsync cap (<= ~5 MB binary, <= ~100k faces):
+  For files that fit in the 20 MB /runsync cap (≤~100k faces) and force_inline=true:
     stl_b64: str           — binary STL, base64-encoded (backward-compatible path)
     report: dict           — vertices, faces, watertight, bbox, stl_bytes
-  For files that exceed it (>= ~5 MB binary):
-    stl_url: str           — presigned HTTPS URL on R2 (24h TTL); client should GET this
+  Default — every output goes to the S3-compatible bucket, returns a presigned URL:
+    stl_url: str           — presigned HTTPS URL on R2/B2/Filebase (24h TTL); client should GET this
     stl_bytes: int         — size of the STL on disk (for client display)
     report: dict           — same fields as above
 
 The 5 MB / 100k-face threshold is conservative. Actual /runsync response cap is
-20 MB (7 MB base64) so the threshold leaves headroom for the JSON envelope.
+20 MB; 7 MB base64 leaves ~13 MB headroom for the JSON envelope.
 
-If BUCKET_ENDPOINT_URL / BUCKET_ACCESS_KEY_ID / BUCKET_SECRET_ACCESS_KEY are not
-set on the endpoint, large files fall back to stl_b64 (which will 400 at the
+If BUCKET_ENDPOINT_URL / BUCKET_ACCESS_KEY_ID / BUCKET_SECRET_ACCESS_KEY / BUCKET_NAME
+are not set on the endpoint, large files fall back to stl_b64 (which will 400 at the
 RunPod job-done callback) and log a clear warning. Set those env vars to enable
 the upload path.
 """
@@ -287,7 +289,7 @@ def handler(event):
             return {"error": "missing 'image' in input (base64, data URL, or http(s) URL)"}
 
         target_faces = int(inp.get("target_faces", DEFAULT_TARGET_FACES))
-        target_faces = max(10_000, min(500_000, target_faces))
+        target_faces = max(10_000, min(1_000_000, target_faces))
         mc_resolution = int(inp.get("mc_resolution", DEFAULT_MC_RESOLUTION))
         mc_resolution = max(64, min(512, mc_resolution))
         force_inline = bool(inp.get(FORCE_INLINE_KEY, False))

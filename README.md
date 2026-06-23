@@ -9,6 +9,14 @@ Image-in → 3D-printable `.stl` out, billed per request on RunPod Serverless.
 - **GPU:** L4 / 3090 (24 GB) recommended; A4000 (16 GB) cost-optimized target
 - **VRAM target:** 8–10 GB with `--low_vram_mode` (see [[STL Forge - Project Plan#GPU trim playbook]])
 
+## Sample output
+
+A rubber-duck image → STL Forge → viewed in Fast STL Viewer 2.71:
+
+![Rubber-duck render — STL Forge output](assets/sample-output.png)
+
+The mesh is watertight and ready for slicing in PrusaSlicer / Bambu Studio. The API's `report` block returns actual generation stats (vertices, faces, time, model load time) for each request.
+
 ## Quick start
 
 ### Build the image
@@ -127,6 +135,8 @@ stl-forge/
 │   └── pipeline.py           # make_printable() + STL export (reusable, no runpod)
 ├── tests/
 │   └── fixtures/             # sample input images (gitkeep)
+├── assets/
+│   └── sample-output.png     # thumbnail for Hub listing + README
 ├── .runpod/
 │   ├── hub.json              # RunPod Hub template metadata
 │   └── tests.json            # smoke test RunPod Hub runs before promoting

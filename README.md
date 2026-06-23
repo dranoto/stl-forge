@@ -2,7 +2,7 @@
 
 Image-in → 3D-printable `.stl` out, billed per request on RunPod Serverless.
 
-[![RunPod](https://api.runpod.io/badge/user/thankfulcarp)](https://console.runpod.io/hub/user/thankfulcarp)
+[![Runpod](https://api.runpod.io/badge/dranoto/stl-forge)](https://console.runpod.io/hub/dranoto/stl-forge)
 
 - **Model:** [Hunyuan3D 2.1](https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1) (shape-only — no Paint/texture for v1)
 - **Pipeline:** image → Hunyuan3D DiT → trimesh cleanup + decimation → binary STL
@@ -113,7 +113,7 @@ Subsequent warm requests typically return in <60s for a 100k-face mesh.
 
 ## Publish to RunPod Hub
 
-This repo is published to [RunPod Hub](https://console.runpod.io/hub/user/thankfulcarp) as a serverless template. To ship a new release:
+This repo is published to [RunPod Hub](https://console.runpod.io/hub/dranoto/stl-forge) as a serverless template. To ship a new release:
 
 1. Update `.runpod/hub.json` and `.runpod/tests.json` if the API or smoke test has changed.
 2. Tag a release on `main`: `git tag vX.Y.Z && git push origin vX.Y.Z`.

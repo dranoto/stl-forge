@@ -118,4 +118,4 @@ ENV LOW_VRAM=0
 HEALTHCHECK NONE
 
 # Entrypoint — RunPod serverless handler
-CMD ["python3", "-u", "/app/src/handler.py"]
+CMD ["python3", "-u", "/app/handler.py"]  # /app/handler.py is the root-level entrypoint that delegates to src/handler.py

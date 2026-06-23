@@ -1,0 +1,32 @@
+{
+  "title": "STL Forge",
+  "description": "Convert a single image into a 3D-printable STL file via Hunyuan3D 2.1 (shape-only) and a trimesh cleanup pipeline (manifold check, hole fill, decimation, recentre). Returns a watertight binary STL plus a printability report. Billed per request on RunPod Serverless.",
+  "type": "serverless",
+  "category": "image",
+  "config": {
+    "runsOn": "GPU",
+    "containerDiskInGb": 30,
+    "presets": [
+      {
+        "name": "Default (L4 / 3090, 24 GB)",
+        "defaults": {
+          "LOW_VRAM": "0",
+          "DEFAULT_TARGET_FACES": "100000",
+          "DEFAULT_MC_RESOLUTION": "256"
+        }
+      },
+      {
+        "name": "Low VRAM (A4000, 16 GB)",
+        "defaults": {
+          "LOW_VRAM": "1",
+          "DEFAULT_TARGET_FACES": "100000",
+          "DEFAULT_MC_RESOLUTION": "192"
+        }
+      }
+    ],
+    "env": [
+      { "key": "HF_HUB_OFFLINE", "value": "1" },
+      { "key": "TRANSFORMERS_OFFLINE", "value": "1" }
+    ]
+  }
+}

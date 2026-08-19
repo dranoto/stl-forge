@@ -1,7 +1,7 @@
 # STL Forge — image-to-3D-printable-STL on RunPod Serverless
 # Build target: linux/amd64 (Apple Silicon must pass --platform linux/amd64)
 #
-# Build:   docker build --platform linux/amd64 -t thankfulcarp/stl-forge:runpod-latest .
+# Build:   docker build --platform linux/amd64 -f .runpod/Dockerfile -t thankfulcarp/stl-forge:runpod-latest .
 # Test:    docker run --rm -it --gpus all -e MODE_TO_RUN=pod thankfulcarp/stl-forge:runpod-latest
 # Push:    docker push thankfulcarp/stl-forge:runpod-latest
 

@@ -75,7 +75,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # App code (placed BEFORE the bake step so app-code changes don't
 # invalidate the model-bake cache layer)
-COPY src/ /app/src/
+COPY .runpod/handler.py .runpod/pipeline.py /app/
 
 # Bake the Hunyuan3D 2.1 shape-only model into the image at the path
 # hy3dgen.shapgen expects (/root/.cache/hy3dgen/tencent/Hunyuan3D-2.1/).
@@ -118,4 +118,4 @@ ENV LOW_VRAM=0
 HEALTHCHECK NONE
 
 # Entrypoint — RunPod serverless handler
-CMD ["python3", "-u", "/app/handler.py"]  # /app/handler.py is the root-level entrypoint that delegates to src/handler.py
+CMD ["python3", "-u", "/app/handler.py"]  # /app/handler.py is .runpod/handler.py (full impl, no __name__ guard)

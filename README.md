@@ -34,7 +34,7 @@ docker run --rm -it --gpus all \
     -e HF_MODEL=tencent/Hunyuan3D-2.1 \
     -p 8000:8000 \
     thankfulcarp/stl-forge:runpod-latest \
-    python -u src/handler.py --rp_serve_api --rp_api_port 8000
+    python -u /app/handler.py --rp_serve_api --rp_api_port 8000
 ```
 
 ### Test with `runsync` against a real RunPod endpoint
@@ -130,8 +130,8 @@ Before publishing:
 stl-forge/
 ├── Dockerfile                # CUDA 12.8 + PyTorch 2.7.0 (Blackwell-compatible) + Hunyuan3D 2.1 + our deps
 ├── requirements.txt          # serverless + cleanup deps
-├── src/
-│   ├── handler.py            # runpod.serverless handler
+├── .runpod/
+│   ├── handler.py            # full RunPod handler (no __name__ guard; Hub sees module-level call)
 │   └── pipeline.py           # make_printable() + STL export (reusable, no runpod)
 ├── tests/
 │   └── fixtures/             # sample input images (gitkeep)

@@ -1,1 +1,0 @@
-"""STL Forge — application package."""

@@ -1,4 +1,4 @@
-# MIT License
+MIT License
 
 Copyright (c) 2026 dranoto
 
@@ -19,14 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-## Third-party model notice
-
-This project uses Tencent's Hunyuan3D 2.1 model for image-to-3D generation.
-The model is governed by the Tencent Hunyuan3D Community License
-(https://huggingface.co/tencent/Hunyuan3D-2), which permits research and
-commercial use subject to its terms. Distribution of this software does NOT
-include the model weights — they are downloaded at build time from HuggingFace
-under that license.

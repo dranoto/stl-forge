@@ -133,9 +133,10 @@ stl-forge/
 │   └── fixtures/             # sample input images (gitkeep)
 ├── assets/
 │   └── sample-output.png     # thumbnail for Hub listing + README
+├── handler.py                # thin wrapper at repo root (Hub's "Handler script" expects this path); imports real impl below
 ├── .runpod/                  # everything Hub reads lives here (takes precedence over root)
 │   ├── Dockerfile            # CUDA 12.8 + PyTorch 2.7.0 (Blackwell-compatible) + Hunyuan3D 2.1 + our deps
-│   ├── handler.py            # full RunPod handler (no __name__ guard; Hub sees module-level call)
+│   ├── handler.py            # full RunPod handler (with __name__ guard so it's safe to import from the root wrapper)
 │   ├── pipeline.py           # make_printable() + STL export (reusable, no runpod)
 │   ├── hub.json              # RunPod Hub template metadata
 │   └── tests.json            # smoke test RunPod Hub runs before promoting

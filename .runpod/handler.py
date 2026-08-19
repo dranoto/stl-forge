@@ -408,4 +408,5 @@ def handler(event):
 # `python src/handler.py --test_input '{"input": {"image": "..."}}'`
 # `python src/handler.py --rp_serve_api` for a local FastAPI on :8000
 
-runpod.serverless.start({"handler": handler})
+if __name__ == "__main__":
+    runpod.serverless.start({"handler": handler})

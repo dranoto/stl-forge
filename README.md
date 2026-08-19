@@ -22,7 +22,7 @@ The mesh is watertight and ready for slicing in PrusaSlicer / Bambu Studio. The 
 ### Build the image
 
 ```bash
-docker build --platform linux/amd64 -f .runpod/Dockerfile -t thankfulcarp/stl-forge:runpod-latest .
+docker build --platform linux/amd64 -t thankfulcarp/stl-forge:runpod-latest .
 docker push thankfulcarp/stl-forge:runpod-latest
 ```
 
@@ -133,11 +133,9 @@ stl-forge/
 │   └── fixtures/             # sample input images (gitkeep)
 ├── assets/
 │   └── sample-output.png     # thumbnail for Hub listing + README
-├── handler.py                # thin wrapper at repo root (Hub's "Handler script" expects this path); imports real impl below
-├── .runpod/                  # everything Hub reads lives here (takes precedence over root)
-│   ├── Dockerfile            # CUDA 12.8 + PyTorch 2.7.0 (Blackwell-compatible) + Hunyuan3D 2.1 + our deps
-│   ├── handler.py            # full RunPod handler (with __name__ guard so it's safe to import from the root wrapper)
-│   ├── pipeline.py           # make_printable() + STL export (reusable, no runpod)
+├── handler.py                # full impl at repo root (Hub's "Handler script" expects this path). __name__ guard wraps the start call.
+├── Dockerfile                # CUDA 12.8 + PyTorch 2.7.0 (Blackwell-compatible) + Hunyuan3D 2.1 + our deps
+├── .runpod/                  # Hub indexing config only (image-side files are at repo root)
 │   ├── hub.json              # RunPod Hub template metadata
 │   └── tests.json            # smoke test RunPod Hub runs before promoting
 ├── .dockerignore

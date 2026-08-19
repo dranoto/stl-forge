@@ -1,7 +1,7 @@
 # STL Forge — image-to-3D-printable-STL on RunPod Serverless
 # Build target: linux/amd64 (Apple Silicon must pass --platform linux/amd64)
 #
-# Build:   docker build --platform linux/amd64 -f .runpod/Dockerfile -t thankfulcarp/stl-forge:runpod-latest .
+# Build:   docker build --platform linux/amd64 -t thankfulcarp/stl-forge:runpod-latest .
 # Test:    docker run --rm -it --gpus all -e MODE_TO_RUN=pod thankfulcarp/stl-forge:runpod-latest
 # Push:    docker push thankfulcarp/stl-forge:runpod-latest
 
@@ -73,11 +73,11 @@ RUN grep -v -E '^(basicsr|tb_nightly|deepspeed|cupy-cuda12x|bpy|realesrgan|rembg
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# App code (placed BEFORE the bake step so app-code changes don't
-# invalidate the model-bake cache layer)
+# App code — repo-root handler.py is the canonical entrypoint.
+# Real implementation lives in handler.py directly; no .runpod/ indirection.
+# Placed BEFORE the bake step so app-code changes don't invalidate the
+# model-bake cache layer.
 COPY handler.py /app/handler.py
-COPY .runpod/handler.py /app/.runpod/handler.py
-COPY .runpod/pipeline.py /app/.runpod/pipeline.py
 
 # Bake the Hunyuan3D 2.1 shape-only model into the image at the path
 # hy3dgen.shapgen expects (/root/.cache/hy3dgen/tencent/Hunyuan3D-2.1/).
@@ -120,4 +120,4 @@ ENV LOW_VRAM=0
 HEALTHCHECK NONE
 
 # Entrypoint — RunPod serverless handler
-CMD ["python3", "-u", "/app/handler.py"]  # /app/handler.py is the repo-root wrapper; full impl at /app/.runpod/handler.py
+CMD ["python3", "-u", "/app/handler.py"]  # /app/handler.py is the canonical handler.py (full impl at repo root, with __name__ guard)

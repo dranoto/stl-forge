@@ -75,7 +75,9 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # App code (placed BEFORE the bake step so app-code changes don't
 # invalidate the model-bake cache layer)
-COPY handler.py /app/handler.py\nCOPY .runpod/handler.py /app/.runpod/handler.py\nCOPY .runpod/pipeline.py /app/.runpod/pipeline.py
+COPY handler.py /app/handler.py
+COPY .runpod/handler.py /app/.runpod/handler.py
+COPY .runpod/pipeline.py /app/.runpod/pipeline.py
 
 # Bake the Hunyuan3D 2.1 shape-only model into the image at the path
 # hy3dgen.shapgen expects (/root/.cache/hy3dgen/tencent/Hunyuan3D-2.1/).

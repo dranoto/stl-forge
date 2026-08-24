@@ -119,5 +119,6 @@ ENV LOW_VRAM=0
 # quick python import check catches the most common "image won't even start" failures
 HEALTHCHECK NONE
 
-# Entrypoint — RunPod serverless handler
-CMD ["python3", "-u", "/app/handler.py"]  # /app/handler.py is the canonical handler.py (full impl at repo root, with __name__ guard)
+# Entrypoint — RunPod serverless handler. Keep the JSON-form CMD alone on its line.
+# An inline comment would make Docker parse it as shell form instead of exec form.
+CMD ["python3", "-u", "/app/handler.py"]

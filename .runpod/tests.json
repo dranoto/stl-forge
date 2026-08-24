@@ -3,7 +3,7 @@
     {
       "name": "smoke_test_stanford_bunny",
       "input": {
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Stanford_bunny.stl/256px-Stanford_bunny.stl.png",
+        "image": "https://raw.githubusercontent.com/dranoto/stl-forge/v1.2.3/assets/sample-output.png",
         "target_faces": 50000,
         "mc_resolution": 128
       },

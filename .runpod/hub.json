@@ -7,7 +7,7 @@
   "config": {
     "runsOn": "GPU",
     "gpuCount": 1,
-    "gpuIds": "NVIDIA L4,NVIDIA A4000",
+    "gpuIds": "AMPERE_24,AMPERE_16",
     "containerDiskInGb": 30,
     "allowedCudaVersions": ["12.8", "12.7", "12.6", "12.5", "12.4"],
     "presets": [

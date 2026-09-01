@@ -5,7 +5,8 @@
       "input": {
         "image": "https://raw.githubusercontent.com/dranoto/stl-forge/v1.2.3/assets/sample-output.png",
         "target_faces": 50000,
-        "mc_resolution": 128
+        "mc_resolution": 96,
+        "num_inference_steps": 1
       },
       "timeout": 300000
     }

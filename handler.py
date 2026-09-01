@@ -5,6 +5,7 @@ Input event:
   input.image: str         — base64, data URL (data:image/...;base64,...), or http(s) URL. Required.
   input.target_faces: int  — decimation target. Default 100000. Range 10k-1M.
   input.mc_resolution: int — Marching Cubes voxel grid. Default 256. Lower for less VRAM.
+  input.num_inference_steps: int — diffusion steps. Default 30; lower values are useful for smoke tests.
   input.quant: str         — "fp16" (default), "fp8", or "int8" — when set, quantize the DiT.
   input.force_inline: bool — opt in to the inline `stl_b64` response path (only safe for ≤100k faces,
                              larger values will 502 the job-done callback at the 20MB /runsync cap).
@@ -292,11 +293,13 @@ def handler(event):
         target_faces = max(10_000, min(1_000_000, target_faces))
         mc_resolution = int(inp.get("mc_resolution", DEFAULT_MC_RESOLUTION))
         mc_resolution = max(64, min(512, mc_resolution))
+        num_inference_steps = int(inp.get("num_inference_steps", 30))
+        num_inference_steps = max(1, min(50, num_inference_steps))
         force_inline = bool(inp.get(FORCE_INLINE_KEY, False))
 
         print(
             f"[stl-forge] request: target_faces={target_faces} mc_resolution={mc_resolution} "
-            f"force_inline={force_inline}",
+            f"num_inference_steps={num_inference_steps} force_inline={force_inline}",
             flush=True,
         )
 
@@ -315,7 +318,7 @@ def handler(event):
 
         # 4. generate
         t0 = time.time()
-        kwargs = {"num_inference_steps": 30}
+        kwargs = {"num_inference_steps": num_inference_steps}
         if hasattr(pipe, "octree_resolution"):
             kwargs["octree_resolution"] = mc_resolution
         mesh_result = pipe(image=tmp_path, **kwargs)[0]

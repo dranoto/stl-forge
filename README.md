@@ -53,7 +53,18 @@ curl -X POST https://api.runpod.ai/v2/$ENDPOINT_ID/runsync \
   }'
 ```
 
-The response is `{"stl_url": "...", "report": {...}}` by default (presigned HTTPS URL on S3-compatible storage, 24h TTL). Set `force_inline: true` in the input to receive `stl_b64` inline instead — only safe for ≤100k faces.
+The response is `{"stl_url": "...", "report": {...}}` when S3-compatible storage is configured and the output exceeds the inline threshold (presigned HTTPS URL, 24h TTL). Small outputs return `stl_b64` inline automatically. Set `force_inline: true` only when you know the response will remain below the safe inline limit.
+
+### Large-output storage
+
+Hub users can provide these optional advanced deployment fields:
+
+- `BUCKET_ENDPOINT_URL` — S3-compatible endpoint, such as `https://s3.filebase.com`
+- `BUCKET_ACCESS_KEY_ID`
+- `BUCKET_SECRET_ACCESS_KEY`
+- `BUCKET_NAME`
+
+Configure all four together. Credentials are deployment environment variables and must never be committed to the repository. Without storage, small meshes continue to work inline; an output above the safe inline limit returns `StorageRequiredError` with guidance instead of sending a payload that RunPod's completion callback may reject.
 
 ## API
 
@@ -116,8 +127,20 @@ Subsequent warm requests typically return in <60s for a 100k-face mesh.
 This repo is published to [RunPod Hub](https://console.runpod.io/hub/listing/dranoto/stl-forge) as a serverless template. To ship a new release:
 
 1. Update `.runpod/hub.json` and `.runpod/tests.json` if the API or smoke test has changed.
-2. Tag a release on `main`: `git tag vX.Y.Z && git push origin vX.Y.Z`.
-3. RunPod Hub picks up the tag, runs `tests.json` against a fresh worker, and promotes the release.
+2. Commit the release changes to `main` and push `main`.
+3. Create the GitHub release from `main` (do not select a raw commit SHA as the target):
+
+   ```bash
+   gh release create vX.Y.Z --target main --title "vX.Y.Z" --generate-notes
+   ```
+
+4. Verify `target_commitish` is `main`:
+
+   ```bash
+   gh api repos/dranoto/stl-forge/releases/tags/vX.Y.Z --jq .target_commitish
+   ```
+
+5. RunPod Hub indexes GitHub releases, then builds and runs `.runpod/tests.json`. A manually pushed Docker Hub image is only needed for the separately maintained personal endpoint; Hub validation builds from the release source.
 
 Before publishing:
 - [ ] Code license locked (see `## License` below).

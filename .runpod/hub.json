@@ -30,7 +30,51 @@
     ],
     "env": [
       { "key": "HF_HUB_OFFLINE", "value": "1" },
-      { "key": "TRANSFORMERS_OFFLINE", "value": "1" }
+      { "key": "TRANSFORMERS_OFFLINE", "value": "1" },
+      {
+        "key": "BUCKET_ENDPOINT_URL",
+        "input": {
+          "name": "S3-compatible endpoint URL",
+          "type": "string",
+          "description": "Optional. Required for outputs above the inline response limit (for example https://s3.filebase.com or your R2/B2 endpoint).",
+          "default": "",
+          "required": false,
+          "advanced": true
+        }
+      },
+      {
+        "key": "BUCKET_ACCESS_KEY_ID",
+        "input": {
+          "name": "Storage access key ID",
+          "type": "string",
+          "description": "Optional S3-compatible access key. Configure all four storage fields together.",
+          "default": "",
+          "required": false,
+          "advanced": true
+        }
+      },
+      {
+        "key": "BUCKET_SECRET_ACCESS_KEY",
+        "input": {
+          "name": "Storage secret access key",
+          "type": "string",
+          "description": "Optional S3-compatible secret key. Treat this value as a credential.",
+          "default": "",
+          "required": false,
+          "advanced": true
+        }
+      },
+      {
+        "key": "BUCKET_NAME",
+        "input": {
+          "name": "Storage bucket name",
+          "type": "string",
+          "description": "Optional bucket name used for large STL outputs.",
+          "default": "",
+          "required": false,
+          "advanced": true
+        }
+      }
     ]
   }
 }

@@ -23,9 +23,9 @@ The 5 MB / 100k-face threshold is conservative. Actual /runsync response cap is
 20 MB; 7 MB base64 leaves ~13 MB headroom for the JSON envelope.
 
 If BUCKET_ENDPOINT_URL / BUCKET_ACCESS_KEY_ID / BUCKET_SECRET_ACCESS_KEY / BUCKET_NAME
-are not set on the endpoint, large files fall back to stl_b64 (which will 400 at the
-RunPod job-done callback) and log a clear warning. Set those env vars to enable
-the upload path.
+are not set on the endpoint, small files still return inline. Large files return a
+compact `StorageRequiredError` instead of an oversized payload that RunPod's job-done
+callback would reject. Set all four env vars to enable large-output uploads.
 """
 
 import os
@@ -318,9 +318,13 @@ def handler(event):
 
         # 4. generate
         t0 = time.time()
-        kwargs = {"num_inference_steps": num_inference_steps}
-        if hasattr(pipe, "octree_resolution"):
-            kwargs["octree_resolution"] = mc_resolution
+        # octree_resolution is a pipeline call argument, not an attribute on the
+        # pipeline object. Always pass the validated request value so smoke tests
+        # and low-VRAM deployments do not silently fall back to Hunyuan's default.
+        kwargs = {
+            "num_inference_steps": num_inference_steps,
+            "octree_resolution": mc_resolution,
+        }
         mesh_result = pipe(image=tmp_path, **kwargs)[0]
         gen_time = time.time() - t0
         print(f"[stl-forge] mesh generated in {gen_time:.1f}s", flush=True)
@@ -369,17 +373,21 @@ def handler(event):
         job_id = event.get("id", f"unknown-{int(time.time())}")
         stl_url = upload_to_r2(stl_bytes, job_id)
         if stl_url is None:
-            # R2 not configured or upload failed — fall back to inline. If the
-            # resulting base64 is too big for /runsync the job-done callback
-            # will 502, but that's better than failing the whole request.
-            print(
-                f"[stl-forge] WARNING: STL is {len(stl_b64)/1024/1024:.1f} MB base64 "
-                f"(> {STL_B64_INLINE_MAX_BYTES/1024/1024:.1f} MB inline limit) and R2 upload "
-                f"failed. Returning stl_b64 anyway — expect a job-done 400.",
-                flush=True,
-            )
+            # Do not return an oversized base64 payload. RunPod's job-done
+            # callback can reject it after inference has already succeeded,
+            # obscuring the actionable storage configuration problem.
+            size_mib = len(stl_b64) / 1024 / 1024
+            limit_mib = STL_B64_INLINE_MAX_BYTES / 1024 / 1024
             return {
-                "stl_b64": stl_b64,
+                "error": (
+                    f"Generated STL is {size_mib:.1f} MiB base64, above the "
+                    f"{limit_mib:.1f} MiB safe inline limit, and upload storage "
+                    "is not configured or the upload failed. Configure "
+                    "BUCKET_ENDPOINT_URL, BUCKET_ACCESS_KEY_ID, "
+                    "BUCKET_SECRET_ACCESS_KEY, and BUCKET_NAME, or request a "
+                    "smaller target_faces value."
+                ),
+                "error_type": "StorageRequiredError",
                 "stl_bytes": int(len(stl_bytes)),
                 "report": report,
             }
